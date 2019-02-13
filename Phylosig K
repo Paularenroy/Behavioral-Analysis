@@ -1,0 +1,101 @@
+#TESTING FOR PHYLOGENETIC SIGNAL OF BEHAVIORAL DATA: TREATMENT EFFECTS ON TRAITS
+
+###BLOMBERG'S K: TESTS FOR PHYLOGENETIC SIGNAL OF EACH TRAIT
+####USED SIMULATIONS BASED ON BROWNIAN MOTION TO TEST LIKELIHOODS TO GET P VALUES
+
+####load in packages and data
+
+library(phytools)
+realtree <- read.tree("RAxML_bestTree.swdtree.tre")
+realtree <-drop.tip(realtree, c("Dana", "Dpob", "Dmel"), trim.internal=FALSE, rooted=TRUE)
+realtree
+
+datacont <- read.csv ("pheno_beh.csv", row.names=1)
+copulation <-as.data.frame(datacont)[,6]
+copulation
+
+courtship <-as.data.frame(datacont)[,5]
+courtship
+
+tenday <-as.data.frame(datacont)[,7]
+tenday
+
+
+####set data for each parameter
+
+
+
+library(phytools)
+
+####real data for copulation frequency
+
+K1<-phylosig(realtree,copulation)
+K1
+
+####fit a Brownian model to the data to get parameters for simulation
+
+fitBrownian<-brownie.lite(paintSubTree(realtree,realtree$edge[1,1],state="1"),copulation)
+X1<-fastBM(realtree,sig2=fitBrownian$sig2.single,a=fitBrownian$a.single,nsim=999)
+nullK1<-apply(X1,2,phylosig,tree=realtree)
+mean(nullK1)
+
+####visualize the k distribution and where actual data fits in
+
+hist(nullK1,breaks=20,xlab="null distribution for K",
+     main="Null distribution of K")
+lines(c(K1,K1),c(0,par()$usr[4]),lty="dashed",col="red")
+text(x=K1,y=0.985*par()$usr[4],"observed value of K",pos=4,offset=0.2)
+
+####run p values for log likelihoods to see how normal data k value compares to brownian motion k value
+
+P.k1<-mean(abs(log(c(K1,nullK1)))>=abs(log(K1)))
+P.k1
+
+
+
+
+####real data for courtship frequency
+
+K2<-phylosig(realtree,courtship)
+K2
+
+####fit a Brownian model to the data to get parameters for simulation
+
+fitBrownian<-brownie.lite(paintSubTree(realtree,realtree$edge[1,1],state="1"),courtship)
+X2<-fastBM(realtree,sig2=fitBrownian$sig2.single,a=fitBrownian$a.single,nsim=999)
+nullK2<-apply(X2,2,phylosig,tree=realtree)
+mean(nullK2)
+
+hist(nullK2,breaks=20,xlab="null distribution for K",
+     main="Null distribution of K")
+lines(c(K2,K2),c(0,par()$usr[4]),lty="dashed",col="red")
+text(x=K2,y=0.985*par()$usr[4],"observed value of K",pos=4,offset=0.2)
+
+P.k2<-mean(abs(log(c(K2,nullK2)))>=abs(log(K2)))
+P.k2
+
+
+##real data for long term copulation data
+
+K3<-phylosig(realtree,tenday)
+K3
+
+####fit a Brownian model to the data to get parameters for simulation
+
+fitBrownian<-brownie.lite(paintSubTree(realtree,realtree$edge[1,1],state="1"),tenday)
+X3<-fastBM(realtree,sig2=fitBrownian$sig2.single,a=fitBrownian$a.single,nsim=999)
+nullK3<-apply(X3,2,phylosig,tree=realtree)
+mean(nullK3)
+
+####visualize the k distribution and where actual data fits in
+
+hist(nullK3,breaks=20,xlab="null distribution for K",
+     main="Null distribution of K")
+lines(c(K3,K3),c(0,par()$usr[4]),lty="dashed",col="red")
+text(x=K3,y=0.985*par()$usr[4],"observed value of K",pos=4,offset=0.2)
+
+
+####run p values for log likelihoods to see how normal data k value compares to brownian motion k value
+
+P.k3<-mean(abs(log(c(K3,nullK3)))>=abs(log(K2)))
+P.k3
